@@ -19,7 +19,7 @@ def stringify(name, obj, indent=0):
         retstr += '%s%s: %s\n' % ('    ' * indent, name, obj)
     return retstr
 
-class Sequencer(object):
+class Sequencer:
     __ARGUMENTS__ = {
         'alsa_sequencer_name':'__sequencer__',
         'alsa_sequencer_stream':S.SND_SEQ_OPEN_DUPLEX,
@@ -71,7 +71,7 @@ class Sequencer(object):
     def _error(self, errcode):
         strerr = S.snd_strerror(errcode)
         msg = "ALSAError[%d]: %s" % (errcode, strerr)
-        raise RuntimeError, msg
+        raise RuntimeError(msg)
 
     def _init_handle(self):
         ret = S.open_client(self.alsa_sequencer_name,
@@ -268,7 +268,7 @@ class Sequencer(object):
             seqev.data.control.value = event.pitch
         ## Unknown
         else:
-            print "Warning :: Unknown event type: %s" % event
+            print("Warning :: Unknown event type: %s" % event)
             return None
             
         err = S.snd_seq_event_output(self.client, seqev)
@@ -306,7 +306,7 @@ class SequencerHardware(Sequencer):
     SequencerType = "hw"
     SequencerMode = 0
 
-    class Client(object):
+    class Client:
         def __init__(self, client, name):
             self.client = client
             self.name = name
@@ -323,7 +323,7 @@ class SequencerHardware(Sequencer):
             self._ports[name] = port
 
         def __iter__(self):
-            return self._ports.itervalues()
+            return iter(self._ports.values())
 
         def __len__(self):
             return len(self._ports)
@@ -332,7 +332,7 @@ class SequencerHardware(Sequencer):
             return self._ports[key]
         __getitem__ = get_port
         
-        class Port(object):
+        class Port:
             def __init__(self, port, name, caps):
                 self.port = port
                 self.name = name
@@ -359,7 +359,7 @@ class SequencerHardware(Sequencer):
         self._query_clients()
 
     def __iter__(self):
-        return self._clients.itervalues()
+        return iter(self._clients.values())
 
     def __len__(self):
         return len(self._clients)

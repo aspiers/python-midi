@@ -33,7 +33,7 @@ class TempoMap(list):
             last = tm
         return last
 
-class EventStreamIterator(object):
+class EventStreamIterator:
     def __init__(self, stream, window):
         self.stream = stream
         self.trackpool = stream.trackpool
@@ -50,9 +50,9 @@ class EventStreamIterator(object):
         self.ttpts.append(stream.endoftrack.tick)
         self.ttpts = iter(self.ttpts)
         # Setup next tempo timepoint
-        self.ttp = self.ttpts.next()
+        self.ttp = next(self.ttpts)
         self.tempomap = iter(self.stream.tempomap)
-        self.tempo = self.tempomap.next()
+        self.tempo = next(self.tempomap)
         self.endoftrack = False
 
     def __iter__(self):
@@ -60,14 +60,14 @@ class EventStreamIterator(object):
 
     def __next_edge(self):
         if self.endoftrack:
-            raise StopIteration
+            raise StopIteration("")
         lastedge = self.window_edge
         self.window_edge += int(self.window_length / self.tempo.mpt)
         if self.window_edge > self.ttp:
             # We're past the tempo-marker.
             oldttp = self.ttp
             try:
-                self.ttp = self.ttpts.next()
+                self.ttp = next(self.ttpts)
             except StopIteration:
                 # End of Track!
                 self.window_edge = self.ttp
@@ -77,11 +77,11 @@ class EventStreamIterator(object):
             # account the tempo change.
             msused = (oldttp - lastedge) * self.tempo.mpt
             msleft = self.window_length - msused
-            self.tempo = self.tempomap.next()
+            self.tempo = next(self.tempomap)
             ticksleft = msleft / self.tempo.mpt
             self.window_edge = ticksleft + self.tempo.tick
 
-    def next(self):
+    def __next__(self):
         ret = []
         self.__next_edge()
         if self.leftover:
