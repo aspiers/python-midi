@@ -2,7 +2,7 @@ import pdb
 class EventRegistry:
     Events = {}
     MetaEvents = {}
-    
+
     def register_event(cls, event, bases):
         if MetaEvent in bases:
             assert event.metacommand not in cls.MetaEvents, \
@@ -22,15 +22,15 @@ EventMIDI : Concrete class used to describe MIDI Events.
 Inherits from Event.
 """
 
-class AbstractEvent:
+class AutoRegister(type):
+    def __init__(cls, name, bases, dict):
+        if name not in ['AbstractEvent', 'Event', 'MetaEvent', 'NoteEvent']:
+            EventRegistry.register_event(cls, bases)
+
+class AbstractEvent(metaclass=AutoRegister):
     name = "Generic MIDI Event"
     length = 0
     statusmsg = 0x0
-
-    class __metaclass__(type):
-        def __init__(cls, name, bases, dict):
-            if name not in ['AbstractEvent', 'Event', 'MetaEvent', 'NoteEvent']:
-                EventRegistry.register_event(cls, bases)
 
     def __init__(self, **kw):
         if type(self.length) == int:
@@ -65,7 +65,7 @@ MetaEvent is a special subclass of Event that is not meant to
 be used as a concrete class.  It defines a subset of Events known
 as the Meta  events.
 """
-    
+
 class Event(AbstractEvent):
     name = 'Event'
 
@@ -79,7 +79,7 @@ class Event(AbstractEvent):
     def copy(self, **kw):
         _kw = {'channel': self.channel, 'tick': self.tick, 'data': self.data}
         _kw.update(kw)
-        return self.__class__(**_kw) 
+        return self.__class__(**_kw)
 
     def __cmp__(self, other):
         if self.tick < other.tick: return -1
@@ -102,7 +102,7 @@ MetaEvent is a special subclass of Event that is not meant to
 be used as a concrete class.  It defines a subset of Events known
 as the Meta  events.
 """
-    
+
 class MetaEvent(AbstractEvent):
     statusmsg = 0xFF
     metacommand = 0x0
@@ -163,7 +163,7 @@ class ControlChangeEvent(Event):
     def get_value(self):
         return self.data[1]
     value = property(get_value, set_value)
-    
+
 class ProgramChangeEvent(Event):
     statusmsg = 0xC0
     length = 1
