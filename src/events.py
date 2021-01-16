@@ -22,12 +22,12 @@ EventMIDI : Concrete class used to describe MIDI Events.
 Inherits from Event.
 """
 
-class EventMetaClass(type):
+class AutoRegister(type):
     def __init__(cls, name, bases, dict):
         if name not in ['AbstractEvent', 'Event', 'MetaEvent', 'NoteEvent']:
             EventRegistry.register_event(cls, bases)
 
-class AbstractEvent(metaclass=EventMetaClass):
+class AbstractEvent(metaclass=AutoRegister):
     name = "Generic MIDI Event"
     length = 0
     statusmsg = 0x0
